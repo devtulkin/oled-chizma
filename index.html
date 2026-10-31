@@ -1,7 +1,7 @@
 <!doctype html>
-<html lang="uz"><head><meta charset="utf-8">
+<html lang="tr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OLED Chizma</title>
+<title>OLED Çizim</title>
 <style>
 :root{--bg:#0f1115;--panel:#1a1e27;--line:#2c3240;--tx:#e8eaf0;--mut:#8a90a0;--acc:#4cc3ff}
 *{box-sizing:border-box}
@@ -15,18 +15,18 @@ button.on{border-color:var(--acc);color:var(--acc)}
 input[type=text]{flex:1;min-width:140px;background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:9px}
 #st{color:var(--mut);font-size:13px;min-height:1.2em}
 </style></head><body>
-<h1>OLED Chizma</h1>
-<div class="bar"><button id="con">🔵 Bluetooth orqali ulanish</button></div>
+<h1>OLED Çizim</h1>
+<div class="bar"><button id="con">🔵 Bluetooth ile bağlan</button></div>
 <div id="wrap"><canvas id="c" width="128" height="64"></canvas></div>
 <div class="bar">
-<button id="pen" class="on">✏️ Qalam</button>
-<button id="era">🧽 O'chirg'ich</button>
-<button id="sz">Qalinlik: 1</button>
-<button id="inv">◐ Teskari</button>
-<button id="clr">🗑 Tozalash</button>
-<label class="b">🖼 Rasm<input id="img" type="file" accept="image/*" hidden></label>
+<button id="pen" class="on">✏️ Kalem</button>
+<button id="era">🧽 Silgi</button>
+<button id="sz">Kalınlık: 1</button>
+<button id="inv">◐ Ters çevir</button>
+<button id="clr">🗑 Temizle</button>
+<label class="b">🖼 Resim<input id="img" type="file" accept="image/*" hidden></label>
 </div>
-<div class="bar"><input id="txt" type="text" placeholder="Matn yozing..."><button id="put">Ekranga yozish</button></div>
+<div class="bar"><input id="txt" type="text" placeholder="Yazı yazın..."><button id="put">Ekrana yaz</button></div>
 <div id="st">...</div>
 <script>
 const W=128,H=64,px=new Uint8Array(W*H);
@@ -66,7 +66,7 @@ c.addEventListener('pointermove',e=>{if(!down)return;const[x,y]=pos(e);line(lx,l
 function setTool(t){tool=t;$('pen').classList.toggle('on',t===1);$('era').classList.toggle('on',t===0);}
 $('pen').onclick=()=>setTool(1);
 $('era').onclick=()=>setTool(0);
-$('sz').onclick=()=>{size=size%5+1;$('sz').textContent='Qalinlik: '+size;};
+$('sz').onclick=()=>{size=size%5+1;$('sz').textContent='Kalınlık: '+size;};
 $('clr').onclick=()=>{px.fill(0);changed();};
 $('inv').onclick=()=>{for(let i=0;i<px.length;i++)px[i]^=1;changed();};
 
@@ -110,31 +110,31 @@ render();
 // ---- Bluetooth (BLE) orqali yuborish ----
 const XIZMAT='7a1e0001-5c3b-4c2e-9d7a-0b1e5d0e1ed0', QATOR='7a1e0002-5c3b-4c2e-9d7a-0b1e5d0e1ed0';
 let ch=null,busy=false,sent=null;
-if(!navigator.bluetooth)st('⚠️ Bu brauzer Bluetooth ni qo‘llamaydi. Chrome yoki Edge da oching.');
-else st('“Bluetooth orqali ulanish” tugmasini bosing.');
+if(!navigator.bluetooth)st('⚠️ Bu tarayıcı Bluetooth desteklemiyor. Chrome veya Edge ile açın (iPhone'da Bluefy).');
+else st('“Bluetooth ile bağlan” düğmesine basın. ESP32 telefonun Bluetooth ayarlarında görünmez, sadece buradan bağlanılır.');
 let dev=null;
 async function ulan(){
   const srv=await dev.gatt.connect();
   ch=await (await srv.getPrimaryService(XIZMAT)).getCharacteristic(QATOR);
   sent=null;dirty=true;$('con').classList.add('on');   // ulangach butun rasm qayta yuboriladi
-  st('✅ Ulangan: '+dev.name+'. Chizishni boshlang!');
+  st('✅ Bağlandı: '+dev.name+'. Çizmeye başlayın!');
 }
 // Ulanish uzilsa, o'zi qayta ulanadi (10 marta urinadi)
 async function qaytaUlan(){
   ch=null;$('con').classList.remove('on');
   for(let i=1;i<=10&&dev;i++){
-    st('🔄 Ulanish uzildi, qayta ulanmoqda... ('+i+'/10)');
+    st('🔄 Bağlantı koptu, yeniden bağlanıyor... ('+i+'/10)');
     try{await ulan();return;}catch(e){await new Promise(r=>setTimeout(r,1000));}
   }
-  st('⚠️ Ulanib bo‘lmadi. “Bluetooth orqali ulanish” ni qayta bosing.');
+  st('⚠️ Bağlanılamadı. “Bluetooth ile bağlan” düğmesine tekrar basın.');
 }
 $('con').onclick=async()=>{
   try{
-    st('Qurilma tanlang: OLED-Chizma-BLE');
+    st('Listeden OLED-Chizma-BLE cihazını seçin');
     const yangi=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'OLED'},{services:[XIZMAT]}],optionalServices:[XIZMAT]});
     if(dev!==yangi){dev=yangi;dev.addEventListener('gattserverdisconnected',qaytaUlan);}
     await ulan();
-  }catch(e){st('⚠️ '+e.message);}
+  }catch(e){st(e.name==='NotFoundError'?'Cihaz seçilmedi. Liste boşsa: ESP32 açık mı, telefonda Konum açık mı, Chrome’a “Yakındaki cihazlar” izni verildi mi?':'⚠️ '+e.message);}
 };
 async function write(buf){
   if(ch.writeValueWithoutResponse)return ch.writeValueWithoutResponse(buf);
@@ -152,7 +152,7 @@ async function pump(){
       // 1 paket = 1 qator (17 bayt): hamma brauzer va MTU uchun xavfsiz
       for(const y of rows){const p=new Uint8Array(17);p[0]=y;p.set(b.subarray(y*16,y*16+16),1);await write(p);}
       sent=b;
-    }catch(e){dirty=true;st('⚠️ Yuborishda xato: '+e.message);await new Promise(r=>setTimeout(r,300));}
+    }catch(e){dirty=true;st('⚠️ Gönderme hatası: '+e.message);await new Promise(r=>setTimeout(r,300));}
     busy=false;}
   requestAnimationFrame(pump);
 }
