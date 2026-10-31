@@ -131,7 +131,7 @@ async function qaytaUlan(){
 $('con').onclick=async()=>{
   try{
     st('Qurilma tanlang: OLED-Chizma-BLE');
-    const yangi=await navigator.bluetooth.requestDevice({filters:[{services:[XIZMAT]}]});
+    const yangi=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'OLED'},{services:[XIZMAT]}],optionalServices:[XIZMAT]});
     if(dev!==yangi){dev=yangi;dev.addEventListener('gattserverdisconnected',qaytaUlan);}
     await ulan();
   }catch(e){st('⚠️ '+e.message);}
