@@ -110,7 +110,7 @@ render();
 // ---- Bluetooth (BLE) orqali yuborish ----
 const XIZMAT='7a1e0001-5c3b-4c2e-9d7a-0b1e5d0e1ed0', QATOR='7a1e0002-5c3b-4c2e-9d7a-0b1e5d0e1ed0';
 let ch=null,busy=false,sent=null;
-if(!navigator.bluetooth)st('⚠️ Bu tarayıcı Bluetooth desteklemiyor. Chrome veya Edge ile açın (iPhone'da Bluefy).');
+if(!navigator.bluetooth)st('⚠️ Bu tarayıcı Bluetooth desteklemiyor. Chrome veya Edge ile açın (iPhone’da Bluefy).');
 else st('“Bluetooth ile bağlan” düğmesine basın. ESP32 telefonun Bluetooth ayarlarında görünmez, sadece buradan bağlanılır.');
 let dev=null;
 async function ulan(){
