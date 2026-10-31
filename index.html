@@ -150,11 +150,20 @@ async function pump(){
         if(!same)rows.push(y);
       }
       // 1 paket = 1 qator (17 bayt): hamma brauzer va MTU uchun xavfsiz
+      if(KOPRU){ // Mac köprüsü: değişen satırların hepsi tek istekte gider
+        const p=new Uint8Array(rows.length*17);
+        rows.forEach((y,k)=>{p[k*17]=y;p.set(b.subarray(y*16,y*16+16),k*17+1);});
+        if(rows.length){const r=await fetch('/satir',{method:'POST',body:p});if(!r.ok)throw new Error(await r.text());st('✅ Mac köprüsü üzerinden ESP32 ekranına gönderildi');}
+      } else
       for(const y of rows){const p=new Uint8Array(17);p[0]=y;p.set(b.subarray(y*16,y*16+16),1);await write(p);}
       sent=b;
     }catch(e){dirty=true;st('⚠️ Gönderme hatası: '+e.message);await new Promise(r=>setTimeout(r,300));}
     busy=false;}
   requestAnimationFrame(pump);
 }
+// Sayfa Mac köprüsünden (mac_kopru.py) açıldıysa tarayıcı Bluetooth'u gerekmez
+const KOPRU=location.protocol==='http:';
+if(KOPRU){ch={kopru:true};sent=null;dirty=true;$('con').hidden=true;
+  st('Mac köprüsü: Mac, ESP32’ye Bluetooth ile bağlanır. Çizmeye başlayın!');}
 pump();
 </script></body></html>
